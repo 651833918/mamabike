@@ -1,8 +1,10 @@
-package cn.powerr.mamabike.cache;
+package cn.powerr.mamabike.common.constant;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Data
 @Component
@@ -19,4 +21,8 @@ public class Parameters {
     @Value("${redis.max-wait-millis}")
     private int redisMaxWaitMillis;
     /*redis config end*/
+
+    //获取security无序认证的页面
+    @Value("#{'${security.noneSecurityPath}'.split(',')}")
+    private List<String> noneSecurityPath;
 }

@@ -24,6 +24,7 @@ public class UserElement {
         map.put("platform", platform);
         map.put("userId", userId + "");
         map.put("token", token);
+        map.put("mobile", mobile);
         if (pushUserId != null) {
             map.put("pushUserId", pushUserId);
         }
@@ -35,6 +36,7 @@ public class UserElement {
 
     /**
      * map转对象
+     *
      * @param map
      * @return
      */

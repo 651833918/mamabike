@@ -1,5 +1,6 @@
 package cn.powerr.mamabike.cache;
 
+import cn.powerr.mamabike.common.constant.Parameters;
 import cn.powerr.mamabike.common.exception.MaMaBikeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
