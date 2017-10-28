@@ -1,7 +1,10 @@
 package cn.powerr.mamabike.user.service;
 
 import cn.powerr.mamabike.cache.CommonCacheUtil;
+import cn.powerr.mamabike.common.constant.Constants;
 import cn.powerr.mamabike.common.exception.MaMaBikeException;
+import cn.powerr.mamabike.common.util.RandomNumber;
+import cn.powerr.mamabike.jms.SmsProcessor;
 import cn.powerr.mamabike.security.AESUtil;
 import cn.powerr.mamabike.security.Base64Util;
 import cn.powerr.mamabike.security.MD5Util;
@@ -12,8 +15,13 @@ import cn.powerr.mamabike.user.entity.UserElement;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.command.ActiveMQQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.jms.Destination;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"ALL", "AlibabaClassMustHaveAuthor"})
 @Slf4j
@@ -28,6 +36,11 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     @Autowired
     private CommonCacheUtil cacheUtil;
+    @Autowired
+    private SmsProcessor smsProcessor;
+
+    private static final String VERIFIYCODE_PREFIX = "verify.code.";
+    private static final String SMS_QUEUE = "sms.queue";
 
     @Override
     public String login(String data, String key) throws MaMaBikeException {
@@ -90,6 +103,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public void modifyNickname(User user) {
         userMapper.updateByPrimaryKey(user);
+    }
+
+    @Override
+    public void sendVercode(String mobile, String ip) throws MaMaBikeException {
+        String verCode = RandomNumber.verCode();
+        int result = cacheUtil.cacheForVerificationCode(VERIFIYCODE_PREFIX + mobile, verCode, "reg", 60, ip);
+        if (result == 1) {
+            log.info("当前验证码未过期,请稍后重试");
+            throw new MaMaBikeException("当前验证码未过期,请稍后重试");
+        } else if (result == 2) {
+            log.info("超过当日验证码次数");
+            throw new MaMaBikeException("超过当日验证码次数");
+        } else if (result == 3) {
+            log.info("超过当日验证码次数{}", ip);
+            throw new MaMaBikeException(ip + "超过当日验证码次数");
+        }
+        log.info("Sending verify code {} for phone {}", verCode, mobile);
+        //校验通过 发送短信
+        Destination destination = new ActiveMQQueue(SMS_QUEUE);
+        Map<String, String> smsParam = new HashMap<>();
+        smsParam.put("mobile", mobile);
+        smsParam.put("tplId", Constants.MDSMS_VERCODE_TPLID);
+        smsParam.put("vercode", verCode);
+        String message = JSON.toJSONString(smsParam);
+        smsProcessor.sendSmsToQueue(destination, message);
     }
 
     /**

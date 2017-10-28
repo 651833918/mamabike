@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("user")
 @Slf4j
@@ -64,12 +66,29 @@ public class UserController extends BaseController{
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
             resp.setMessage(e.getMessage());
         } catch (Exception e) {
-            log.error("Fail to login", e);
+            log.error("Fail to modifyNickname", e);
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
             resp.setMessage("内部错误");
         }
         return resp;
     }
 
+
+    @RequestMapping(value = "/sendVercode")
+    public ApiResult sendVercode(@RequestBody User user, HttpServletRequest request) {
+        ApiResult resp = new ApiResult();
+        try{
+            userService.sendVercode(user.getMobile(),getIpFromRequest(request));
+
+        }catch (MaMaBikeException e) {
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage(e.getMessage());
+        } catch (Exception e) {
+            log.error("Fail to send sms vercode", e);
+            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            resp.setMessage("内部错误");
+        }
+        return resp;
+    }
 
 }
