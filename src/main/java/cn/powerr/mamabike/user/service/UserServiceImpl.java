@@ -36,6 +36,9 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
     @Autowired
     private CommonCacheUtil cacheUtil;
+    /**
+     * Jms消息队列
+     */
     @Autowired
     private SmsProcessor smsProcessor;
 
@@ -54,7 +57,6 @@ public class UserServiceImpl implements UserService {
             if (decryptData == null) {
                 throw new Exception();
             }
-
             JSONObject jsonObject = JSON.parseObject(decryptData);
             String mobile = jsonObject.getString("mobile");
             String code = jsonObject.getString("code");
@@ -63,7 +65,7 @@ public class UserServiceImpl implements UserService {
                 throw new Exception();
             }
             //取redis的验证码 手机号码做Key,验证码做value 匹配成功说明是本人手机
-            String verCode = cacheUtil.getCache(mobile);
+            String verCode = cacheUtil.getCache(VERIFIYCODE_PREFIX+mobile);
             User user;
             if (code.equals(verCode)) {
                 //手机验证码匹配
@@ -89,10 +91,6 @@ public class UserServiceImpl implements UserService {
             ue.setToken(token);
             ue.setPlatform(platform);
             cacheUtil.putTokenWhenLogin(ue);
-
-            //判断用户是否在数据库存在 存在生成token存到redis中 不存在帮他注册插入数据库
-
-
         } catch (Exception e) {
             log.error("Fail to decrypt data");
             throw new MaMaBikeException("数据解析错误");

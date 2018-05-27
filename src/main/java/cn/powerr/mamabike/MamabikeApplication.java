@@ -26,6 +26,11 @@ public class MamabikeApplication {
         return new HttpMessageConverters(converters);
     }
 
+    /**
+     * property-source placeholder, to support where "#" and ".split" used
+     * @return
+     */
+    @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         return new PropertySourcesPlaceholderConfigurer();
     }

@@ -35,7 +35,7 @@ public class MiaoDiSmsSender implements SmsSender {
             param.put("respDataType","json");
             String result = HttpUtil.post(url,param);
             JSONObject jsonObject = JSON.parseObject(result);
-            if(!jsonObject.getString("respCode").equals("00000")){
+            if(!"00000".equals(jsonObject.getString("respCode"))){
                 log.error("fail to send sms to "+phone+":"+params+":"+result);
             }
         } catch (Exception e) {

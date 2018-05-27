@@ -8,10 +8,9 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 
 
-public class RSAUtil {
+public final class RSAUtil {
 
     /**
      * 私钥字符串
@@ -96,7 +95,8 @@ public class RSAUtil {
     }
 
     /**
-     *  引入第三方密码工具包 处理编码
+     * 引入第三方密码工具包 处理编码
+     *
      * @param stored
      * @return
      * @throws GeneralSecurityException
@@ -117,7 +117,7 @@ public class RSAUtil {
         v.add(new DEROctetString(data));
         ASN1Sequence seq = new DERSequence(v);
         byte[] privKey = seq.getEncoded("DER");
-        PKCS8EncodedKeySpec spec = new  PKCS8EncodedKeySpec(privKey);
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(privKey);
         KeyFactory fact = KeyFactory.getInstance("RSA");
         PrivateKey key = fact.generatePrivate(spec);
 
@@ -126,21 +126,25 @@ public class RSAUtil {
     }
 
 
-    public static void main(String[] args) throws Exception {
-        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-        keyPairGen.initialize(1024);
-        KeyPair keyPair = keyPairGen.generateKeyPair();
-        PrivateKey privateKey = keyPair.getPrivate();
-        PublicKey publicKey = keyPair.getPublic();
-        /*System.out.println(Base64.encode(privateKey.getEncoded()));
-        System.out.println(Base64.encode(publicKey.getEncoded()));*/
-        convert();
-        byte[] enR = encryptByPublicKey("老王来了。。。".getBytes("utf-8"),PUBLIC_KEY);
-        System.out.println(enR.toString());
-        byte[] result = decryptByPrivateKey(enR);
-        System.out.println(new String(result,"utf-8"));
+//    public static void main(String[] args) throws Exception {
+//        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+//        keyPairGen.initialize(1024);
+//        KeyPair keyPair = keyPairGen.generateKeyPair();
+//        PrivateKey privateKey = keyPair.getPrivate();
+//        PublicKey publicKey = keyPair.getPublic();
+//        /*System.out.println(Base64.encode(privateKey.getEncoded()));
+//        System.out.println(Base64.encode(publicKey.getEncoded()));*/
+//        convert();
+//        byte[] enR = encryptByPublicKey("老王来了。。。".getBytes("utf-8"),PUBLIC_KEY);
+//        System.out.println(enR.toString());
+//        byte[] result = decryptByPrivateKey(enR);
+//        System.out.println(new String(result,"utf-8"));
+//
+//    }
 
-
+    public static void main(String[] args) throws NoSuchAlgorithmException {
+        String data = "需要加密传输的数据";
+        
     }
 
 }

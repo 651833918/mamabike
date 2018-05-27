@@ -17,6 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *@author Xue
+ *@date 2018/5/20 17:28
+ *@description  HttpClient调用发短信接口
+ */
 @Slf4j
 public class HttpUtil {
 

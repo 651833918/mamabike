@@ -42,6 +42,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().addFilter(getPreAuthenticatedProcessingFilter());
     }
 
+    /**
+     * manager set 1-n provider
+     * @param auth
+     * @throws Exception
+     */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(new RestAuthenticationProvider());
@@ -51,6 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         //忽略HttpMethod的OPTION方法
+        //cross domain request
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
     }
 }

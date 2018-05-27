@@ -8,8 +8,8 @@ import cn.powerr.mamabike.user.entity.LoginInfo;
 import cn.powerr.mamabike.user.entity.User;
 import cn.powerr.mamabike.user.entity.UserElement;
 import cn.powerr.mamabike.user.service.UserService;
-import com.alibaba.druid.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+
 
 @RestController
 @RequestMapping("user")
@@ -29,25 +30,23 @@ public class UserController extends BaseController{
 
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResult<String> login(@RequestBody LoginInfo loginInfo) {
-        ApiResult<String> resp = new ApiResult<>();
-
+        ApiResult<String> result = new ApiResult<>();
         try {
             String data = loginInfo.getData();
             String key = loginInfo.getKey();
-            if (StringUtils.isEmpty(data) || StringUtils.isEmpty(key)) {
-                throw new MaMaBikeException("参数校验失败");
+            if(StringUtils.isBlank(data)||StringUtils.isBlank(key)){
+                throw new MaMaBikeException("参数校验异常");
             }
             String token = userService.login(data, key);
-            resp.setData(token);
+            result.setData(token);
         } catch (MaMaBikeException e) {
-            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            resp.setMessage(e.getMessage());
-        } catch (Exception e) {
-            log.error("Fail to login", e);
-            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            resp.setMessage("内部错误");
+            result.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+            result.setMessage(e.getMessage());
+        } catch (Exception e){
+            result.setMessage("内部错误");
+            result.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
         }
-        return resp;
+        return result;
     }
 
     /**
@@ -60,7 +59,7 @@ public class UserController extends BaseController{
         ApiResult resp = new ApiResult();
         try{
             UserElement ue = getCurrentUser();
-            ue.setUserId(ue.getUserId());
+            user.setId(ue.getUserId());
             userService.modifyNickname(user);
         }catch (MaMaBikeException e) {
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
@@ -74,12 +73,17 @@ public class UserController extends BaseController{
     }
 
 
+    /**
+     *
+     * @param user
+     * @param request 通过拿到ip地址限制发送次数
+     * @return
+     */
     @RequestMapping(value = "/sendVercode")
     public ApiResult sendVercode(@RequestBody User user, HttpServletRequest request) {
         ApiResult resp = new ApiResult();
         try{
             userService.sendVercode(user.getMobile(),getIpFromRequest(request));
-
         }catch (MaMaBikeException e) {
             resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
             resp.setMessage(e.getMessage());

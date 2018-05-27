@@ -14,6 +14,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *@author Xue
+ *@date 2018/5/20 16:15
+ *@description  preAuthenticated process urls
+ */
 @Slf4j
 public class RestPreAuthenticatedProcessingFilter extends AbstractPreAuthenticatedProcessingFilter {
 
@@ -32,7 +37,8 @@ public class RestPreAuthenticatedProcessingFilter extends AbstractPreAuthenticat
     }
 
     /**
-     * 获取用户信息,返回Object到RestAuthenticationProvider的supports方法
+     * 获取用户凭证,返回Object到RestAuthenticationProvider的supports方法
+     * return the exact-object which extends {@code AbstractAuthenticationToken} pre-define role
      *
      * @param request
      * @return
@@ -45,6 +51,7 @@ public class RestPreAuthenticatedProcessingFilter extends AbstractPreAuthenticat
             GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_SOME");
             authorities = new ArrayList<>();
             authorities.add(authority);
+            //带有角色
             return new RestAuthenticationToken(authorities);
         }
         //检查app版本
@@ -53,12 +60,13 @@ public class RestPreAuthenticatedProcessingFilter extends AbstractPreAuthenticat
         if (version == null) {
             request.setAttribute("header-error", 400);
         }
+
         //检查token
         if (request.getAttribute("header-error") == null) {
             try {
                 if (!StringUtils.isBlank(token)) {
                     UserElement ue = commonCacheUtil.getUserByToken(token);
-                    if (ue instanceof UserElement) {
+                    if (ue != null) {
                         //检查到token说明用户已经登录 授权给用户BIKE_CLIENT角色 允许访问
                         GrantedAuthority authority = new SimpleGrantedAuthority("BIKE_CLIENT");
                         authorities = new ArrayList<>();

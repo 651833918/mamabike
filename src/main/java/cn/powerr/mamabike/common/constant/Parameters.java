@@ -22,7 +22,7 @@ public class Parameters {
     private int redisMaxWaitMillis;
     /*redis config end*/
 
-    //获取security无序认证的页面
+    //获取security无需认证的页面
     @Value("#{'${security.noneSecurityPath}'.split(',')}")
     private List<String> noneSecurityPath;
 }

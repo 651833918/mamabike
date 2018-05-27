@@ -19,6 +19,11 @@ public class SmsProcessor {
     @Qualifier(value = "verCodeService")
     private SmsSender smsSender;
 
+    /**
+     * 发送message到destination
+     * @param destination
+     * @param message
+     */
     public void sendSmsToQueue(Destination destination, final String message) {
         jmsTemplate.convertAndSend(destination, message);
     }

@@ -1,13 +1,12 @@
 #server
 server:
-  port: 8080
+  port: 8888
 #spring
 spring:
   application:
     name:  mamabike
   profiles:
     active: dev
-
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
