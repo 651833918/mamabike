@@ -23,6 +23,7 @@ spring:
     testOnReturn: false
     poolPreparedStatements: true
     maxOpenPreparedStatements: 20
+
 #mybatis
 mybatis:
   mapper-locations: classpath:cn/powerr/**/*.xml

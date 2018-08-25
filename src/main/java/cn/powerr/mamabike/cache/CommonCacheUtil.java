@@ -158,68 +158,65 @@ public class CommonCacheUtil {
 
     /**
      * 缓存手机验证码用 限制发送次数
+     *
      * @param key 手机号
      * @return 1 当前手机验证码未过期, 2手机号超过当日发送次数, 3 ip超过当日验证码次数上线
      */
     public int cacheForVerificationCode(String key, String verCode, String type, int second, String ip) throws MaMaBikeException {
-        try {
-            JedisPool pool = jedisPoolWrapper.getJedisPool();
-            if (pool != null) {
-                try (Jedis jedis = pool.getResource()) {
-                    jedis.select(0);
-                    String ipKey = "ip." + ip;
-                    if (ip == null) {
-                        return 3;
-                    } else {
-                        String ipSendCount = jedis.get(ipKey);
-                        try {
-                            if (ipSendCount != null && Integer.parseInt(ipSendCount) >= 10) {
-                                return 3;
-                            }
-                        } catch (NumberFormatException e) {
-                            log.error("Fail to process ip send count", e);
+        JedisPool pool = jedisPoolWrapper.getJedisPool();
+        if (pool != null) {
+            try (Jedis jedis = pool.getResource()) {
+                jedis.select(0);
+                String ipKey = "ip." + ip;
+                if (ip == null) {
+                    return 3;
+                } else {
+                    // 当前ip发送次数
+                    String ipSendCount = jedis.get(ipKey);
+                    try {
+                        if (ipSendCount != null && Integer.parseInt(ipSendCount) >= 10) {
                             return 3;
                         }
-                    }
-                    //返回1表示redis设置成功，返回0表示redis存在对应的key
-                    long succ = jedis.setnx(key, verCode);
-                    if (succ == 0) {
-                        return 1;
-                    }
-
-                    String sendCount = jedis.get(key + "." + type);
-                    try {
-                        if (sendCount != null && Integer.parseInt(sendCount) >= 10) {
-                            jedis.del(key);
-                            return 2;
-                        }
                     } catch (NumberFormatException e) {
-                        log.error("Fail to process send count", e);
+                        log.error("Fail to process ip send count", e);
+                        return 3;
+                    }
+                }
+                //返回1表示redis设置成功，返回0表示redis存在对应的key
+                long succ = jedis.setnx(key, verCode);
+                if (succ == 0) {
+                    return 1;
+                }
+
+                String sendCount = jedis.get(key + "." + type);
+                try {
+                    if (sendCount != null && Integer.parseInt(sendCount) >= 10) {
                         jedis.del(key);
                         return 2;
                     }
+                } catch (NumberFormatException e) {
+                    log.error("Fail to process send count", e);
+                    jedis.del(key);
+                    return 2;
+                }
 
-                    try {
-                        // trans.set(key, value);
-                        jedis.expire(key, second);
-                        long val = jedis.incr(key + "." + type);
-                        //自增后是1表明是第一次发验证码
-                        if (val == 1) {
-                            jedis.expire(key + "." + type, 86400);
-                        }
-
-                        jedis.incr(ipKey);
-                        if (val == 1) {
-                            jedis.expire(ipKey, 86400);
-                        }
-                    } catch (Exception e) {
-                        log.error("Fail to cache data into redis", e);
+                try {
+                    // trans.set(key, value);
+                    jedis.expire(key, second);
+                    long val = jedis.incr(key + "." + type);
+                    //自增后是1表明是第一次发验证码
+                    if (val == 1) {
+                        jedis.expire(key + "." + type, 86400);
                     }
+
+                    jedis.incr(ipKey);
+                    if (val == 1) {
+                        jedis.expire(ipKey, 86400);
+                    }
+                } catch (Exception e) {
+                    log.error("Fail to cache data into redis", e);
                 }
             }
-        } catch (Exception e) {
-            log.error("Fail to cache for expiry", e);
-            throw new MaMaBikeException("Fail to cache for expiry");
         }
         //验证码发送成功
         return 0;

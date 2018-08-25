@@ -18,6 +18,7 @@ import java.util.Map;
 public class MiaoDiSmsSender implements SmsSender {
 
     private static String operation = "/industrySMS/sendSMS";
+
     @Override
     public void sendSms(String phone, String tplId, String params) {
         try {

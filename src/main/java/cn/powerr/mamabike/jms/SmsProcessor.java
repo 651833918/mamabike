@@ -2,18 +2,17 @@ package cn.powerr.mamabike.jms;
 
 import cn.powerr.mamabike.sms.SmsSender;
 import com.alibaba.fastjson.JSONObject;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.stereotype.Component;
-
-import javax.jms.Destination;
 
 @Component(value = "smsProcessor")
 public class SmsProcessor {
+
     @Autowired
-    private JmsMessagingTemplate jmsTemplate;
+    private AmqpTemplate amqpTemplate;
 
     @Autowired
     @Qualifier(value = "verCodeService")
@@ -21,14 +20,14 @@ public class SmsProcessor {
 
     /**
      * 发送message到destination
-     * @param destination
+     * @param queue
      * @param message
      */
-    public void sendSmsToQueue(Destination destination, final String message) {
-        jmsTemplate.convertAndSend(destination, message);
+    public void sendSmsToQueue(String queue, final String message) {
+        amqpTemplate.convertAndSend(queue, message);
     }
 
-    @JmsListener(destination = "sms.queue")
+    @RabbitListener(queues = MqConfig.VERFICODE_QUEUE)
     public void doSendSmsMessages(String text) {
         JSONObject jsonObject = JSONObject.parseObject(text);
         smsSender.sendSms(jsonObject.getString("mobile"), jsonObject.getString("tplId"), jsonObject.getString("vercode"));

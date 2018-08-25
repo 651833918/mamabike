@@ -31,6 +31,7 @@ public class RestAuthenticationProvider implements AuthenticationProvider {
                 }
             }
         }
+        // "ROLE_NONE"会走到这一步
         throw new BadCredentialException("unknown.error");
     }
 

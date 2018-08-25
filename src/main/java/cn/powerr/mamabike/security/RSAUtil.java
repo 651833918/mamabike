@@ -126,25 +126,26 @@ public final class RSAUtil {
     }
 
 
-//    public static void main(String[] args) throws Exception {
-//        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-//        keyPairGen.initialize(1024);
-//        KeyPair keyPair = keyPairGen.generateKeyPair();
-//        PrivateKey privateKey = keyPair.getPrivate();
-//        PublicKey publicKey = keyPair.getPublic();
-//        /*System.out.println(Base64.encode(privateKey.getEncoded()));
-//        System.out.println(Base64.encode(publicKey.getEncoded()));*/
-//        convert();
-//        byte[] enR = encryptByPublicKey("老王来了。。。".getBytes("utf-8"),PUBLIC_KEY);
-//        System.out.println(enR.toString());
-//        byte[] result = decryptByPrivateKey(enR);
-//        System.out.println(new String(result,"utf-8"));
+    public static void main(String[] args) throws Exception {
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+        keyPairGen.initialize(1024);
+        KeyPair keyPair = keyPairGen.generateKeyPair();
+        PrivateKey privateKey = keyPair.getPrivate();
+        PublicKey publicKey = keyPair.getPublic();
+        // decode
+        System.out.println(Base64Util.encode(privateKey.getEncoded()));
+        System.out.println(Base64Util.encode(publicKey.getEncoded()));
+        convert();
+        byte[] enR = encryptByPublicKey("老王来了。。。".getBytes("utf-8"),PUBLIC_KEY);
+        System.out.println(enR.toString());
+        byte[] result = decryptByPrivateKey(enR);
+        System.out.println(new String(result,"utf-8"));
+
+    }
+
+//    public static void main(String[] args) throws NoSuchAlgorithmException {
+//        String data = "需要加密传输的数据";
 //
 //    }
-
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        String data = "需要加密传输的数据";
-        
-    }
 
 }

@@ -5,7 +5,7 @@
 
     <!--classPathEntry:数据库的JDBC驱动 -->
     <classPathEntry
-            location="C:\Program Files\MySQL\mysql-connector-java-5.1.41\mysql-connector-java-5.1.41-bin.jar" />
+            location="D:\develop\apache-maven-3.5.4\MavenRepository\mysql\mysql-connector-java\5.1.45\mysql-connector-java-5.1.45.jar"/>
 
     <context id="MysqlTables" targetRuntime="MyBatis3">
 
@@ -16,14 +16,14 @@
         <!-- 注释生成器 -->
         <commentGenerator>
             <!-- 是否去除自动生成的注释 true：是 ： false:否 -->
-            <property name="suppressAllComments" value="true" />
+            <property name="suppressAllComments" value="true"/>
         </commentGenerator>
 
         <!-- 必须的（1 required） -->
         <!--数据库连接的信息：驱动类、连接地址、用户名、密码 -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://localhost:3306/mamabike"
-                        userId="root" password="#m15310614196">
+                        connectionURL="jdbc:mysql://localhost:3306/mamabike?tinyInt1isBit=false"
+                        userId="root" password="root">
         </jdbcConnection>
 
         <!-- 可选的（0 or 1） -->
@@ -31,48 +31,57 @@
         <!-- 默认false，把JDBC DECIMAL 和 NUMERIC 类型解析为 Integer true，把JDBC DECIMAL 和
             NUMERIC 类型解析为java.math.BigDecimal -->
         <javaTypeResolver>
-            <property name="forceBigDecimals" value="false" />
+            <property name="forceBigDecimals" value="false"/>
         </javaTypeResolver>
 
 
         <!-- 必须的（1 required） -->
         <!-- java模型生成器 -->
         <!-- targetProject:自动生成代码的位置 -->
-        <javaModelGenerator targetPackage="cn.powerr.mamabike.user.entity"
-                            targetProject="D:\IDEAtotal\mamabike\src\main\java"
-                             >
+        <javaModelGenerator targetPackage="cn.powerr.mamabike.bike.entity"
+                            targetProject="D:\develop\IDEAWORKPLACE\mamabike\src\main\java"
+        >
             <!-- TODO enableSubPackages:是否让schema作为包的后缀 -->
-            <property name="enableSubPackages" value="true" />
+            <property name="enableSubPackages" value="true"/>
             <!-- 从数据库返回的值被清理前后的空格 -->
-            <property name="trimStrings" value="true" />
+            <property name="trimStrings" value="true"/>
         </javaModelGenerator>
 
         <!-- 必须的（1 required） -->
         <!-- map xml 生成器 -->
-        <sqlMapGenerator targetPackage="cn.powerr.mamabike.user.dao"
-                         targetProject="D:\IDEAtotal\mamabike\src\main\java">
-            <property name="enableSubPackages" value="true" />
+        <sqlMapGenerator targetPackage="cn.powerr.mamabike.bike.dao"
+                         targetProject="D:\develop\IDEAWORKPLACE\mamabike\src\main\java">
+            <property name="enableSubPackages" value="true"/>
         </sqlMapGenerator>
 
         <!-- 可选的（0 or 1） -->
         <!-- mapper 或者就是dao接口生成器 -->
-        <javaClientGenerator targetPackage="cn.powerr.mamabike.user.dao"
-                             targetProject="D:\IDEAtotal\mamabike\src\main\java"
+        <javaClientGenerator targetPackage="cn.powerr.mamabike.bike.dao"
+                             targetProject="D:\develop\IDEAWORKPLACE\mamabike\src\main\java"
                              type="XMLMAPPER">
-            <property name="enableSubPackages" value="true" />
+            <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
         <!-- 必须的（1...N） -->
         <!-- pojo 实体生成器 -->
         <!-- tableName:用于自动生成代码的数据库表；domainObjectName:对应于数据库表的javaBean类名 -->
         <!-- schema即为数据库名 可不写 -->
-        <table  tableName="user" domainObjectName="User"
-               enableInsert="true" enableCountByExample="false" enableUpdateByExample="false" enableDeleteByExample="false"
-                enableSelectByExample="false" selectByExampleQueryId="false">
+        <table tableName="ride_fee" domainObjectName="RideFee"
+               enableInsert="true" enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false" selectByExampleQueryId="false">
             <!-- 忽略字段 可选的（0 or 1） -->
             <!-- <ignoreColumn column="is_use" /> -->
             <!--//无论字段是什么类型，生成的类属性都是varchar。 可选的（0 or 1） 测试无效 -->
             <!-- <columnOverride column="city_code" jdbcType="VARCHAR" /> -->
         </table>
+        <table tableName="ride_record" domainObjectName="RideRecord"
+               enableInsert="true" enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false" selectByExampleQueryId="false"></table>
+        <table tableName="wallet" domainObjectName="Wallet"
+               enableInsert="true" enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false"
+               enableSelectByExample="false" selectByExampleQueryId="false"></table>
     </context>
 </generatorConfiguration>

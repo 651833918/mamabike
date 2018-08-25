@@ -17,7 +17,6 @@ public class BaseController {
     private CommonCacheUtil cacheUtil;
 
     protected UserElement getCurrentUser() {
-
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String token = request.getHeader(Constants.REQUEST_TOKEN_KEY);
         if (!StringUtils.isBlank(token)) {
@@ -35,7 +34,7 @@ public class BaseController {
 
     /**
      * 获取ip
-     *
+     * 限制用户发短信次数
      * @param request
      * @return
      */

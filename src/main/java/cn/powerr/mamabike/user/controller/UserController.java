@@ -1,10 +1,10 @@
 package cn.powerr.mamabike.user.controller;
 
-import cn.powerr.mamabike.common.constant.Constants;
 import cn.powerr.mamabike.common.exception.MaMaBikeException;
 import cn.powerr.mamabike.common.response.ApiResult;
+import cn.powerr.mamabike.common.response.CodeMsg;
 import cn.powerr.mamabike.common.rest.BaseController;
-import cn.powerr.mamabike.user.entity.LoginInfo;
+import cn.powerr.mamabike.user.entity.TransferInfo;
 import cn.powerr.mamabike.user.entity.User;
 import cn.powerr.mamabike.user.entity.UserElement;
 import cn.powerr.mamabike.user.service.UserService;
@@ -23,30 +23,20 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("user")
 @Slf4j
-public class UserController extends BaseController{
+public class UserController extends BaseController {
 
     @Autowired
     private UserService userService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ApiResult<String> login(@RequestBody LoginInfo loginInfo) {
-        ApiResult<String> result = new ApiResult<>();
-        try {
-            String data = loginInfo.getData();
-            String key = loginInfo.getKey();
-            if(StringUtils.isBlank(data)||StringUtils.isBlank(key)){
-                throw new MaMaBikeException("参数校验异常");
-            }
-            String token = userService.login(data, key);
-            result.setData(token);
-        } catch (MaMaBikeException e) {
-            result.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            result.setMessage(e.getMessage());
-        } catch (Exception e){
-            result.setMessage("内部错误");
-            result.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
+    public ApiResult<String> login(@RequestBody TransferInfo transferInfo) {
+        String data = transferInfo.getData();
+        String key = transferInfo.getKey();
+        if (StringUtils.isBlank(data) || StringUtils.isBlank(key)) {
+            throw new MaMaBikeException(CodeMsg.ILLEGAL_ARGUMENT_ERROR);
         }
-        return result;
+        String token = userService.login(data, key);
+        return ApiResult.success(token);
     }
 
     /**
@@ -55,44 +45,24 @@ public class UserController extends BaseController{
      * @return
      */
     @RequestMapping(value = "/modifyNickName")
-    public ApiResult modifyNickname(@RequestBody User user) {
-        ApiResult resp = new ApiResult();
-        try{
-            UserElement ue = getCurrentUser();
-            user.setId(ue.getUserId());
-            userService.modifyNickname(user);
-        }catch (MaMaBikeException e) {
-            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            resp.setMessage(e.getMessage());
-        } catch (Exception e) {
-            log.error("Fail to modifyNickname", e);
-            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            resp.setMessage("内部错误");
-        }
-        return resp;
+    public ApiResult<Boolean> modifyNickname(@RequestBody User user) {
+        UserElement ue = getCurrentUser();
+        user.setId(ue.getUserId());
+        userService.modifyNickname(user);
+        return ApiResult.success(true);
     }
 
 
     /**
-     *
+     * 发送验证码
      * @param user
-     * @param request 通过拿到ip地址限制发送次数
+     * @param request
      * @return
      */
     @RequestMapping(value = "/sendVercode")
-    public ApiResult sendVercode(@RequestBody User user, HttpServletRequest request) {
-        ApiResult resp = new ApiResult();
-        try{
-            userService.sendVercode(user.getMobile(),getIpFromRequest(request));
-        }catch (MaMaBikeException e) {
-            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            resp.setMessage(e.getMessage());
-        } catch (Exception e) {
-            log.error("Fail to send sms vercode", e);
-            resp.setCode(Constants.RESP_STATUS_INTERNAL_ERROR);
-            resp.setMessage("内部错误");
-        }
-        return resp;
+    public ApiResult<Boolean> sendVercode(@RequestBody User user, HttpServletRequest request) {
+        userService.sendVercode(user.getMobile(), getIpFromRequest(request));
+        return ApiResult.success(true);
     }
 
 }
