@@ -60,17 +60,24 @@ public class BikeController extends BaseController {
      * 用户手动搬动单车锁进行锁车
      * 单车锁车并向服务器（接口）发送锁车信息
      * 只能获取单车信息
-     * @param bike
+     * @param location
      * @return
      */
     @RequestMapping("lockBike")
-    public ApiResult<Boolean> lockBike(@RequestBody Bike bike) {
-        boolean pushSucc = bikeService.lockBike( bike.getNumber());
+    public ApiResult<Boolean> lockBike(@RequestBody BikeLocation location) {
+        boolean pushSucc = bikeService.lockBike( location);
         if (pushSucc) {
             return ApiResult.success(true);
         }
         return ApiResult.error(CodeMsg.BIKE_LOCK_FAIL);
     }
 
-
+    @RequestMapping("reportLocation")
+    public ApiResult<Boolean> reportLocation(@RequestBody BikeLocation bikeLocation){
+        boolean succ = bikeService.reportLocation(bikeLocation);
+        if(!succ){
+            return ApiResult.error(CodeMsg.BIKE_REPORT_FAIL);
+        }
+        return ApiResult.success(true);
+    }
 }

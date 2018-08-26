@@ -4,10 +4,7 @@ import cn.powerr.mamabike.bike.dao.BikeMapper;
 import cn.powerr.mamabike.bike.dao.RideFeeMapper;
 import cn.powerr.mamabike.bike.dao.RideRecordMapper;
 import cn.powerr.mamabike.bike.dao.WalletMapper;
-import cn.powerr.mamabike.bike.entity.Bike;
-import cn.powerr.mamabike.bike.entity.RideFee;
-import cn.powerr.mamabike.bike.entity.RideRecord;
-import cn.powerr.mamabike.bike.entity.Wallet;
+import cn.powerr.mamabike.bike.entity.*;
 import cn.powerr.mamabike.bike.service.BikeService;
 import cn.powerr.mamabike.common.exception.MaMaBikeException;
 import cn.powerr.mamabike.common.response.CodeMsg;
@@ -15,6 +12,9 @@ import cn.powerr.mamabike.common.util.RandomNumber;
 import cn.powerr.mamabike.user.dao.UserMapper;
 import cn.powerr.mamabike.user.entity.User;
 import cn.powerr.mamabike.user.entity.UserElement;
+import com.google.common.collect.Lists;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class BikeServiceImpl implements BikeService {
@@ -100,7 +101,8 @@ public class BikeServiceImpl implements BikeService {
         Query query = new Query(Criteria.where("bikeNumber").is(number));
         // BIKE_RIDING 骑行中
         Update update = Update.update("status", BIKE_RIDING);
-        mongoTemplate.updateFirst(query,update,"bike_location");
+        mongoTemplate.updateFirst(query, update, "bike_location");
+        // 插入ride_contrail记录
         return true;
     }
 
@@ -111,15 +113,16 @@ public class BikeServiceImpl implements BikeService {
      * 3.写入ride_record
      * 4.wallet钱包扣费
      * 5.mongodb status状态改为未骑行
-     * @param number
+     *
+     * @param location
      * @return
      */
     @Transactional
     @Override
-    public boolean lockBike(Long number) {
-        RideRecord rideRecord = rideRecordMapper.selectByBikeNoOnGoing(number);
+    public boolean lockBike(BikeLocation location) {
+        RideRecord rideRecord = rideRecordMapper.selectByBikeNoOnGoing(location.getBikeNumber());
         long userId = rideRecord.getUserid();
-        Bike bike = bikeMapper.selectByBikeNo(number);
+        Bike bike = bikeMapper.selectByBikeNo(location.getBikeNumber());
         // 骑行结束时间
         Date endTime = new Date();
         rideRecord.setEndTime(endTime);
@@ -130,17 +133,17 @@ public class BikeServiceImpl implements BikeService {
         // 骑行花费分钟数
         rideRecord.setRideTime(minutes);
         // 获取骑行时间单位、费用单位
-        RideFee rideFee =  feeMapper.selectByType(bike.getType());
+        RideFee rideFee = feeMapper.selectByType(bike.getType());
         Integer minUnit = rideFee.getMinUnit();
         BigDecimal fee = rideFee.getFee();
         BigDecimal cost;
         // 计算骑行总花费
-        if (minutes / minUnit == 0){
+        if (minutes / minUnit == 0) {
             cost = fee;
-        }else if(minutes % minUnit == 0){
+        } else if (minutes % minUnit == 0) {
             int times = minutes / minUnit;
             cost = fee.multiply(new BigDecimal(times));
-        }else {
+        } else {
             // 不整除加一个时间单位
             int times = minutes / minUnit;
             times += 1;
@@ -152,10 +155,41 @@ public class BikeServiceImpl implements BikeService {
         Wallet wallet = walletMapper.selectByUserId(userId);
         wallet.setRemainSum(wallet.getDeposit().subtract(cost));
         walletMapper.updateByPrimaryKey(wallet);
-        // 更新mongodb状态
-        Query query = new Query(Criteria.where("bikeNumber").is(number));
-        Update update = Update.update("status", BIKE_UN_RIDING);
-        mongoTemplate.updateFirst(query,update,"bike_location");
+        // 更新mongodb bike_location状态
+        Query query = new Query(Criteria.where("bikeNumber").is(location.getBikeNumber()));
+        Update update = Update.update("status", BIKE_UN_RIDING)
+                .set("location.coordinates", location.getCoordinates());
+        mongoTemplate.updateFirst(query, update, "bike_location");
+        // 插入ride_contrail记录
+        return true;
+    }
+
+    /**
+     * 上报骑行记录
+     * @param bikeLocation
+     * @return
+     */
+    @Override
+    public boolean reportLocation(BikeLocation bikeLocation) {
+        RideRecord rideRecord = rideRecordMapper.selectByBikeNoOnGoing(bikeLocation.getBikeNumber());
+        if (rideRecord == null) {
+            throw new MaMaBikeException(CodeMsg.RIDING_RECORD_NON);
+        }
+        DBObject object = mongoTemplate.getCollection("ride_contrail")
+                .findOne(new BasicDBObject("record_no", rideRecord.getRecordNo()));
+        if (object == null) {
+            List<BasicDBObject> list = Lists.newArrayList();
+            BasicDBObject temp = new BasicDBObject("loc", bikeLocation.getCoordinates());
+            list.add(temp);
+            BasicDBObject insertObj = new BasicDBObject("record_no", rideRecord.getRecordNo())
+                    .append("bike_no", rideRecord.getBikeNo())
+                    .append("contrail", list);
+            mongoTemplate.insert(insertObj, "ride_contrail");
+        } else {
+            Query query = new Query(Criteria.where("record_no").is(rideRecord.getRecordNo()));
+            Update update = new Update().push("contrail", new BasicDBObject("loc", bikeLocation.getCoordinates()));
+            mongoTemplate.updateFirst(query, update, "ride_contrail");
+        }
         return true;
     }
 

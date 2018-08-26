@@ -2,6 +2,7 @@ package cn.powerr.mamabike.bike.service.impl;
 
 import cn.powerr.mamabike.bike.entity.BikeLocation;
 import cn.powerr.mamabike.bike.entity.Point;
+import cn.powerr.mamabike.bike.entity.RideContrail;
 import cn.powerr.mamabike.bike.service.BikeGeoService;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBList;
@@ -59,5 +60,29 @@ public class BikeGeoServiceImpl implements BikeGeoService {
             res.add(bikeLocation);
         }
         return res;
+    }
+
+    /**
+     * 查询单条骑行记录详细信息
+     * @param recordNo
+     * @return
+     */
+    @Override
+    public RideContrail showOneRecord(String recordNo) {
+        DBObject one = mongoTemplate.getCollection("ride_contrail").findOne(new BasicDBObject("record_no", recordNo));
+        RideContrail rideContrail = new RideContrail();
+        rideContrail.setRideRecordNo(recordNo);
+        rideContrail.setBikeNo(((Integer)one.get("bike_no")).longValue());
+        BasicDBList list= (BasicDBList) one.get("contrail");
+        List<Point> points = Lists.newArrayList();
+        for (Object ob : list) {
+            BasicDBList loc = (BasicDBList) ((BasicDBObject) ob).get("loc");
+            Double[] temp = new Double[2];
+            loc.toArray(temp);
+            Point point = new Point(temp[0],temp[1]);
+            points.add(point);
+        }
+        rideContrail.setContrail(points);
+        return rideContrail;
     }
 }

@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.security.access.method.P;
 
+import java.util.List;
+
 @Mapper
 public interface RideRecordMapper {
     int deleteByPrimaryKey(Long id);
@@ -21,4 +23,6 @@ public interface RideRecordMapper {
     int updateByPrimaryKey(RideRecord record);
 
     RideRecord selectByBikeNoOnGoing(@Param("bikeNo")Long bikeNo);
+
+    List<RideRecord> selectRecords(@Param("userId")Long userId, @Param("lastId")Long lastId);
 }

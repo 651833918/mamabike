@@ -29,7 +29,11 @@
     select * from ride_record
     where status = 1 and bike_no = #{bikeNo}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    <select id="selectRecords" resultType="cn.powerr.mamabike.bike.entity.RideRecord">
+      select * from ride_record
+      where userid = #{userId} and status = 2 order by start_time desc limit lastId,10
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
     delete from ride_record
     where id = #{id,jdbcType=BIGINT}
   </delete>
